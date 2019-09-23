@@ -6,6 +6,10 @@ def to_screen(message, skip_eol=False):
     sys.stdout.write(message)
     sys.stdout.flush()
 
+def to_screen2(message):
+    sys.stdout.write(f'\r{message}              ')
+    sys.stdout.flush()
+
 
 def read_csv(s, *fields, separator='\\n'):
     fields_string, *content = s.split(separator)
@@ -18,3 +22,14 @@ def read_csv(s, *fields, separator='\\n'):
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
+
+
+class FRError(Exception):
+    pass
+
+
+class ExtractorError(FRError):
+    pass
+
+class NoContent(ExtractorError):
+    pass

@@ -34,6 +34,24 @@ class Database(object):
         fields = ', '.join(map(lambda k: f'{k}=?', keys))
         sql = f'UPDATE {table} SET {fields} WHERE id=?'
         self.con.execute(sql, values + (id, ))
+    
+    def table_exists(self, table):
+        for _ in self.con.execute(f'PRAGMA table_info({table})'):
+            return True
+        return False
+
+    def field_exists(self, field, table):
+        info = self.con.execute(f'PRAGMA table_info({table})')
+        for name in map(lambda i: i[1], info):
+            if name == field:
+                return True
+        return False
+
+    def begin(self):
+        self.con.execute('BEGIN TRANSACTION')
+
+    def end(self):
+        self.con.execute('END TRANSACTION')
 
     def load_json(self, records: dict):
         for tname, records in records.items():
@@ -47,4 +65,3 @@ class Database(object):
             # fill data
             for record in records:
                 self.insert(tname, **record)
-        self.con.commit()
