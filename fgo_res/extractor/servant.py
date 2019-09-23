@@ -1,7 +1,7 @@
 import re
 
 from .common import FGOWikiExtractor
-from .model import FWTreasureDevice, FWSkill
+from .model import FWTreasureDevice, FWSkill, FWVoice
 
 
 class ServantExtractor(FGOWikiExtractor):
@@ -120,6 +120,16 @@ class ServantExtractor(FGOWikiExtractor):
             story = trs[1].xpath('string(td/div/div/p)').rstrip('\n')
             stroies.append((cond, story))
         return stroies
+    
+    def extract_voices(self):
+        items = []
+        for table in self.find_tables('语音', self.WT_MW_NOMOBILE):
+            trs = table.xpath('tbody/tr')
+            category = trs[0].xpath('string(th/b)')
+            items += [FWVoice(category, tr.xpath('string(th/b)'), 
+            tr.xpath('string(td[1]/p)'), tr.xpath('string(td[2]/span/a[last()]/@href)')) for tr in trs[1:]]
+        return items
+
 
     def _extract_battle_images(self):
         tables = list(self.find_tables('战斗形象', self.WT))

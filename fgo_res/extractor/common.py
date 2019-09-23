@@ -1,5 +1,7 @@
 from lxml import etree
 
+from ..utils import NoContent
+
 
 class MediaWikiExtractor(object):
     """根据`标题`对网页正文部分进行区域划分.
@@ -10,6 +12,8 @@ class MediaWikiExtractor(object):
         html = etree.HTML(html)
         self.root = html.find(
             './/*[@id="mw-content-text"]/div[@class="mw-parser-output"]')
+        if self.root is None:
+            raise NoContent('Content Not Found.')
     
     def find(self, in_head):
         """
@@ -36,6 +40,7 @@ class FGOWikiExtractor(MediaWikiExtractor):
     WT_NOMOBILE = 'wikitable nomobile'
     WT = 'wikitable'
     NOMOBILE = 'nomobile'
+    WT_MW_NOMOBILE = 'wikitable mw-collapsible mw-collapsed nomobile'
 
     def __init__(self, html):
         super(FGOWikiExtractor, self).__init__(html, 'https://fgo.wiki/w')

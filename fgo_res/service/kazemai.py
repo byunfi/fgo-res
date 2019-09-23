@@ -12,7 +12,7 @@ COMMENT_SECTION = 'comment'
 
 
 def masterdata() -> dict:
-    url = os.path.join(__COMMON_DIR, 'js/master.js')
+    url = os.path.join(__COMMON_DIR, 'js', 'master.js')
     text = requests.getcache(url).text
     matched = re.search(
         r"convert_formated_hex_to_string\('(.*)'\)\);", text).group(1)
@@ -30,7 +30,7 @@ def masterdata() -> dict:
 
 
 def get_comment_url(svtId):
-    return os.path.join(__COMMON_DIR, f'svtcomment/jp/{svtId}')
+    return os.path.join(__COMMON_DIR, 'svtcomment', 'jp', str(svtId))
 
 
 def get_comment_json(svtId):

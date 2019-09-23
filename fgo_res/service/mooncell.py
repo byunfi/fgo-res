@@ -12,6 +12,26 @@ def get_servant_url(link_name):
     return os.path.join(__DOMAIN, link_name)
 
 
+def get_related_quest_url(link_name):
+    return os.path.join(__DOMAIN, link_name, '从者任务')
+
+
+def get_related_quest_html(link_name):
+    url = get_related_quest_url(link_name)
+    html_str = requests.getcache(url, SERVANT_SECTION).text
+    return html_str
+
+
+def get_mission_url(name):
+    return os.path.join(__DOMAIN, name, '关卡配置')
+
+
+def get_mission_html(name):
+    url = get_mission_url(name)
+    html_str = requests.getcache(url, SERVANT_SECTION).text
+    return html_str
+
+
 def get_servant_html(link_name):
     url = get_servant_url(link_name)
     html_str = requests.getcache(url, SERVANT_SECTION).text

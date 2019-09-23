@@ -8,10 +8,28 @@ class FRDatabase(Database):
             ' (type=1 or type=2)', (collectionNo,)).fetchone()
         return res[0] if res else None
 
+    def soptId_for_Quest(self, questId):
+        res = self.con.execute(
+            'select spotId from mstQuest where id=?', 
+            (questId,)).fetchone()
+        return res[0] if res else None
+        
     def servants(self):
         res = self.con.execute(
             'SELECT id, collectionNo, name FROM mstSvt WHERE collectionNo>0'
             ' and (type=1 or type=2) ORDER BY collectionNo').fetchall()
+        return res
+    
+    def main_quests(self):
+        res = self.con.execute(
+            'select id, jpName, name from mstQuest where type=1'
+            ' AND id<93000000').fetchall()
+        return res
+    
+    def free_quests(self):
+        res = self.con.execute(
+            'select id, jpName, name from mstQuest'
+            ' where type=2 and id<94000000').fetchall()
         return res
     
     def get_passiveIds(self, svtId):
@@ -89,4 +107,14 @@ class FRDatabase(Database):
         self.update('mstItem', itemId, name=name)
 
     def update_mstQuest(self, questId, name):
-        self.update('questId', questId, name=name)
+        self.update('mstQuest', questId, name=name)
+
+    def update_mstSpot(self, spotId, name):
+        self.update('mstSpot', spotId, name=name)
+
+    def update_mstSvtComment(self, svtId, id, comment):
+        self.con.execute('UPDATE mstSvtComment SET comment=? WHERE'
+        ' svtId=? and id=?', (comment, svtId, id))
+
+    def update_mstSvtVoice(self, svtId, category, stage, lines, audioURL):
+        self.con.execute('INSERT INTO mstSvtVoice VALUES (?,?,?,?,?)', (svtId, category, stage, lines, audioURL))
