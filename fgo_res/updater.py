@@ -66,8 +66,7 @@ class FRUpdater(FRDatabase):
         for svt in svts:
             limit = self.con.execute(
                 'SELECT rarity,hpMax,atkMax,power,defense,agility,magic,luck,'
-                'treasureDevice,policy,personality,deity FROM mstSvtLimit'
-            ).fetchone()
+                'treasureDevice,policy,personality,deity FROM mstSvtLimit WHERE svtId=?', (svt[0],)).fetchone()
             self.con.execute(
                 f'INSERT OR REPLACE INTO mstSvtIndex VALUES ({ph})',
                 svt + limit + ('', ''))

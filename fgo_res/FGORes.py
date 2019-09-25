@@ -29,7 +29,7 @@ class FGORes(object):
     def start(self):
         updater = self.updater
         to_screen('Loading masterData...', skip_eol=True)
-        if not updater.is_masterData_loaded:
+        if not updater.is_masterData_loaded():
             self.load_masterData()
             updater.commit()
         to_screen(' loaded.')
@@ -38,7 +38,7 @@ class FGORes(object):
         svtIds = list(map(lambda s: s[0], servants))
 
         to_screen('Loading mstSvtComment...', skip_eol=True)
-        if not updater.is_mstSvtComment_loaded:
+        if not updater.is_mstSvtComment_loaded():
             self.load_mstSvtComment(svtIds)
             updater.commit()
         to_screen(' loaded.')
