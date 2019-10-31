@@ -13,6 +13,10 @@ class FRUpdater(FRDatabase):
     def is_masterData_loaded(self):
         return self.table_exists('mstSkillDetail')
 
+    def has_relateQuests(self, svtId) -> bool:
+        s = self.con.execute('SELECT relateQuestIds FROM mstSvt WHERE id=?', (svtId,)).fetchone()[0]
+        return s is not None and len(s) > 2
+
     def custom_table(self):
         for add_value_name in ('mstSkillDetail', 'mstTreasureDeviceDetail'):
             if self.field_exists('value', add_value_name):
@@ -35,29 +39,29 @@ class FRUpdater(FRDatabase):
 
     def create_mstSvtIndex(self):
         self.con.execute('''CREATE TABLE IF NOT EXISTS mstSvtIndex (
-            id integer PRIMARY KEY,
-            collectionNo integer,
-            name text,
-            jpName text,
-            classId integer,
-            cardIds text,
-            individuality text,
-            genderType integer,
-            attri integer,
-            rarity integer,
-            hpMax integer,
-            atkMax integer,
-            power integer,
-            defense integer,
-            agility integer,
-            magic integer,
-            luck integer,
-            treasureDevice integer,
-            policy integer,
-            personality integer,
-            deity integer,
-            linkName text,
-            nickNames text
+            id INTEGER PRIMARY KEY,
+            collectionNo INTEGER,
+            name TEXT,
+            jpName TEXT,
+            classId INTEGER,
+            cardIds TEXT,
+            individuality TEXT,
+            genderType INTEGER,
+            attri INTEGER,
+            rarity INTEGER,
+            hpMax INTEGER,
+            atkMax INTEGER,
+            power INTEGER,
+            defense INTEGER,
+            agility INTEGER,
+            magic INTEGER,
+            luck INTEGER,
+            treasureDevice INTEGER,
+            policy INTEGER,
+            personality INTEGER,
+            deity INTEGER,
+            linkName TEXT,
+            nickNames TEXT
             )''')
         svts = self.con.execute(
             'SELECT id,collectionNo,name,jpName,classId,cardIds,individuality,'
@@ -73,16 +77,51 @@ class FRUpdater(FRDatabase):
 
     def create_mstSvtVoice(self):
         self.con.execute("""CREATE TABLE IF NOT EXISTS mstSvtVoice (
-            svtId interger,
-            category text,
-            stage text,
-            lines text,
-            audioURL text
+            svtId INTEGER,
+            category TEXT,
+            stage TEXT,
+            lines TEXT,
+            audioURL TEXT
         )""")
 
     def update_mstSvtIndex(self, svtId, link_name, nicknames):
         self.update(
             'mstSvtIndex', svtId, linkName=link_name, nickNames=nicknames)
+
+    def add_foregin_keys(self):
+        #TODO: update
+        ts = {
+            # your table: [(your table key, target table, target table key)]
+
+            "mstSkill": [("id", "mstSvtSkill", "skillId")],
+            "mstTreasureDevice": [("id", "mstSvtTreasureDevice", "treasureDeviceId")],
+            # -> mstSkill
+            "mstSkillDetail": [("id", "mstSkill", "id")],
+            "mstSkillLv": [("skillId", "mstSkill", "id")],
+            # -> mstTreasureDevice
+            "mstTreasureDeviceDetail":  [("id", "mstTreasureDevice", "id")],
+            "mstTreasureDeviceLv":  [("treasureDeviceId", "mstTreasureDevice", "id")],
+            # -> mstSvt
+            "mstSvtSkill": [("svtId", "mstSvt", "id")],
+            "mstSvtLimit": [("svtId", "mstSvt", "id")],
+            "mstSvtTreasureDevice": [("svtId", "mstSvt", "id")],
+            "mstCv": [("id", "mstSvt", "id")]
+        }
+
+        self.begin()
+        self.con.execute("pragma writable_schema=1")
+        for tablename, fks in ts.items():
+            sql = self.con.execute("SELECT sql FROM SQLITE_MASTER WHERE name=? AND TYPE = 'table'", (tablename,)).fetchone()[0]
+            if "FOREIGN KEY" in sql:
+                a = sql.find(",FOREIGN KEY")
+                sql = sql[:a]
+            else:
+                sql = sql[:-1]
+            fk_s = ','.join(map(lambda fk: f"FOREIGN KEY ({fk[0]}) REFERENCES {fk[1]}({fk[2]})", fks))
+            sql = f"{sql},{fk_s})"
+            print(sql)
+            self.con.execute("UPDATE SQLITE_MASTER SET sql=? WHERE name=? AND TYPE = 'table'", (sql, tablename))
+        self.end()
 
     def update_name(self, svtId, name):
         self.update_mstSvt(svtId, name)

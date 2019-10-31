@@ -28,39 +28,42 @@ class FGORes(object):
 
     def start(self):
         updater = self.updater
-        to_screen('Loading masterData...', skip_eol=True)
-        if not updater.is_masterData_loaded():
-            self.load_masterData()
-            updater.commit()
-        to_screen(' loaded.')
+        # to_screen('Loading masterData...', skip_eol=True)
+        # if not updater.is_masterData_loaded():
+        #     self.load_masterData()
+        #     updater.commit()
+        # to_screen(' loaded.')
 
-        servants = self.servants
-        svtIds = list(map(lambda s: s[0], servants))
+        # servants = self.servants
+        # svtIds = list(map(lambda s: s[0], servants))
+        # link_names = list(map(lambda s: s[3], servants))
+        # self.predownload(link_names, svtIds)
 
-        to_screen('Loading mstSvtComment...', skip_eol=True)
-        if not updater.is_mstSvtComment_loaded():
-            self.load_mstSvtComment(svtIds)
-            updater.commit()
-        to_screen(' loaded.')
-        # csutom table fields.
-        updater.custom_table()
+        # to_screen('Loading mstSvtComment...', skip_eol=True)
+        # if not updater.is_mstSvtComment_loaded():
+        #     self.load_mstSvtComment(svtIds)
+        #     updater.commit()
+        # to_screen(' loaded.')
+        # # csutom table fields.
+        # updater.custom_table()
         
-        updater.begin()
-        to_screen('Start loading servants.')
-        for svtId, no, name, link_name, _ in servants[1:]:
-            to_screen2(f'loading No.{no} {name}')
-            self.update_servant(link_name, svtId)
-            if updater.get_passiveIds:
-                self.update_related_quest(link_name, svtId)
-        to_screen('Apply patches.')
-        self.apply_patches()
-        updater.end()
+        # updater.begin()
+        # to_screen('Start loading servants.')
+        # for svtId, no, name, link_name, _ in servants[1:]:
+        #     to_screen2(f'loading No.{no} {name}')
+        #     self.update_servant(link_name, svtId)
+        #     if updater.has_relateQuests(svtId):
+        #         self.update_related_quest(link_name, svtId)
+        # to_screen('Apply patches.')
+        # self.apply_patches()
+        # updater.end()
 
-        to_screen('Updating Index.')
-        updater.create_mstSvtIndex()
-        for svtId, _, _, link_name, nicknames in servants:
-            updater.update_mstSvtIndex(svtId, link_name, nicknames)
-        updater.commit()
+        # to_screen('Updating Index.')
+        # updater.create_mstSvtIndex()
+        # for svtId, _, _, link_name, nicknames in servants:
+        #     updater.update_mstSvtIndex(svtId, link_name, nicknames)
+        # updater.commit()
+        updater.add_foregin_keys()
         to_screen('Complete.')
 
     def load_masterData(self):
@@ -76,7 +79,11 @@ class FGORes(object):
         to_screen('Downloading servants from mooncell...')
         service.predownload_servants(link_names)
         to_screen('Downloading servant quests from mooncell...')
-        service.predownload_related_quests(link_names)
+        r_names = []
+        for i, svtId in enumerate(svtIds):
+            if self.updater.has_relateQuests(svtId):
+                r_names.append(link_names[i])
+        service.predownload_related_quests(r_names)
         to_screen('Downloading comments from kazemai...')
         service.predownload_comments(svtIds)
 

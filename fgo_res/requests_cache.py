@@ -43,9 +43,11 @@ def setcache(url, section='') -> bool:
 def setcaches(urls, section=''):
     def _setcache(url):
         setcache(url, section)
-
+        
     pool = ThreadPool(8)
     res = pool.imap_unordered(_setcache, urls)
+    for _ in res:
+        pass
     pool.close()
     pool.join()
 
